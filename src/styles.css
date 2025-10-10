@@ -52,13 +52,22 @@
     overflow: hidden; /* clip overflow without ellipsis */
 
     /* Animated gradient text fill */
-    background: linear-gradient(90deg, #ff7a7a, #ffd56a, #7aff9a, #7acbff, #c97aff, #ff7a7a);
+    background: radial-gradient(circle, #ff7a7a, #ffd56a, #7aff9a, #7acbff, #c97aff, #ff7a7a);
     background-size: 600% 100%; /* larger gradient for smoother shifts */
-    animation: gradientMove 8s ease-in-out infinite alternate; /* slower and pulsing (back-and-forth) */
+    animation: gradientMove 30s ease-in-out infinite alternate; /* slightly faster pulsing (back-and-forth) */
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 0;
+    }
+    100% {
+        background-position: 100% 0;
+    }
 }
 
 .increment-btn {

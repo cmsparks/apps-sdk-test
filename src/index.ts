@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { newWorkersRpcResponse, RpcStub, RpcTarget } from "capnweb";
 import { DurableObject } from "cloudflare:workers";
+import { CounterEntrypoint } from "./counter";
 
 // Adapted from https://developers.openai.com/apps-sdk/build/examples
 export class McpWidgetAgent extends McpAgent<Env> {
@@ -15,9 +16,9 @@ export class McpWidgetAgent extends McpAgent<Env> {
   }
 
   async init() {
-    const entrypoint = new ServerEntrypoint(this.env)
+    const entrypoint = new CounterEntrypoint(this.env)
     this.server.registerResource(
-      "pizzaz-map",
+      "map",
       "ui://widget/index.html",
       {},
       async (uri, extra) => ({
@@ -26,7 +27,6 @@ export class McpWidgetAgent extends McpAgent<Env> {
             uri: "ui://widget/index.html",
             mimeType: "text/html+skybridge",
             text: `<div>
-            <script>const sessionId = '${extra.sessionId}'; </script>
             ${await (await this.env.ASSETS.fetch("http://localhost/")).text()}
             </div>`
           }
@@ -91,63 +91,6 @@ export class McpWidgetAgent extends McpAgent<Env> {
   }
 }
 
-
-export type State = {
-  counter: number
-}
-
-export class Counter extends Agent<Env, State> {
-  initialState: State = {
-    counter: 0
-  }
-  onCounterChange: ((counter: number) => void)[] = []
-
-  constructor(ctx: DurableObjectState, public env: Env) {
-    super(ctx, env);
-  }
-
-  getCounter() {
-    return this.state.counter
-  }
-
-  incrementCounter() {
-    this.setState({
-      counter: this.state.counter + 1
-    })
-    if (this.onCounterChange) {
-      this.onCounterChange.map((onCounterChange) => onCounterChange(this.state.counter))
-    }
-  }
-
-  setOnCounterChange(onStateUpdate: Rpc.Stub<(counter: number) => void>) {
-    this.onCounterChange.push(onStateUpdate.dup())
-  }
-}
-
-export class ServerEntrypoint extends RpcTarget {
-  constructor(public env: Env) {
-    super()
-  }
-
-  setOnCounterChange(onCounterChange: RpcStub<(counter: number) => void>) {
-    const agent = this.env.COUNTER.idFromName('counter')
-    const stub = this.env.COUNTER.get(agent)
-    stub.setOnCounterChange(onCounterChange.dup())
-  }
-
-  async getCounter(): Promise<number> {
-    const agent = this.env.COUNTER.idFromName('counter')
-    const stub = this.env.COUNTER.get(agent)
-    return stub.getCounter()
-  }
-
-  async incrementCounter() {
-    const agent = this.env.COUNTER.idFromName('counter')
-    const stub = this.env.COUNTER.get(agent)
-    return stub.incrementCounter()
-  }
-}
-
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url)
@@ -165,9 +108,11 @@ export default {
       if (req.method === "OPTIONS") {
         return new Response("OK", { headers: corsHeaders })
       }
-      return newWorkersRpcResponse(req, new ServerEntrypoint(env));
+      return newWorkersRpcResponse(req, new CounterEntrypoint(env));
     }
 
     return new Response("Not found", { status: 404 })
   }
 }
+
+export { Counter } from './counter'
