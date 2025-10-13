@@ -27,6 +27,7 @@ export class McpWidgetAgent extends McpAgent<Env> {
             uri: "ui://widget/index.html",
             mimeType: "text/html+skybridge",
             text: `<div>
+            aksldjfhjkasdjklfahlskjdfhlkjalhjkdfhljkads
             ${await (await this.env.ASSETS.fetch("http://localhost/")).text()}
             </div>`
           }

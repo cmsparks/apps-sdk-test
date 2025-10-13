@@ -1,7 +1,6 @@
 import { Agent } from "agents";
 import { RpcStub, RpcTarget } from "capnweb";
-import type { JSX } from "react";
-import * as react from "react"
+import { RpcComponent } from "./rpc-components";
 
 export type State = {
     counter: number
@@ -39,7 +38,6 @@ export class Counter extends Agent<Env, State> {
  * Server side code for the counter
  */
 export class CounterEntrypoint extends RpcTarget {
-
     constructor(public env: Env) {
         super()
     }
@@ -55,8 +53,16 @@ export class CounterEntrypoint extends RpcTarget {
     async getCounter(): Promise<number> {
         return this.counter.getCounter()
     }
-
     async incrementCounter() {
         return this.counter.incrementCounter()
+    }
+
+    @RpcComponent()
+    async Counter(): Promise<React.ReactNode> {
+        const OtherComponent = () => <div>Test component!</div>
+        return <p className="counter-value" aria-live="polite">
+            {await this.counter.getCounter()}
+            <OtherComponent />
+        </p>
     }
 }

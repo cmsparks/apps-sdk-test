@@ -1,9 +1,10 @@
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import type { CounterEntrypoint } from "./counter";
 import { useToolResponseMetadata } from "./react-utils";
 import { useRpcContext, RpcProvider } from "./useRpc";
+import { inflate, RpcSuspense } from "./rpc-components";
 
 /**
  * Client side react hook for our counter
@@ -11,13 +12,13 @@ import { useRpcContext, RpcProvider } from "./useRpc";
 function useServerCounter() {
     const [counter, setCounter] = useState(0)
     const stub = useRpcContext<CounterEntrypoint>()
-    
+
     useEffect(() => {
         stub.getCounter().then(setCounter)
         // the setCounter callback is being triggered by the counter changing on the server!
         stub.registerOnCounterChange(setCounter)
     }, [stub])
-    
+
     return {
         counter,
         incrementCounter: () => stub.incrementCounter()
@@ -26,14 +27,21 @@ function useServerCounter() {
 
 function App() {
     const toolResponseMetadata: { sessionId: string } | null = useToolResponseMetadata() as { sessionId: string } | null
-    const { counter, incrementCounter } = useServerCounter()
+    const { incrementCounter } = useServerCounter()
+    const rpc = useRpcContext<CounterEntrypoint>()
 
     return (
         <div className="container">
             <p className="session-id">{toolResponseMetadata?.sessionId}</p>
             <div className="counter-row">
-                
-                <p className="counter-value" aria-live="polite">{counter}</p>
+                <RpcSuspense
+                    deferFallback
+                    fallback={
+                        <p className="counter-value" aria-live="polite">???</p>
+                    }
+                >
+                    <rpc.Counter />
+                </RpcSuspense>
                 <button
                     className="increment-btn"
                     onClick={() => {
@@ -43,7 +51,6 @@ function App() {
                     Increment
                 </button>
             </div>
-            
         </div>
     );
 }

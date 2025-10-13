@@ -1,5 +1,7 @@
 import { newWebSocketRpcSession, RpcStub, type RpcTarget } from "capnweb"
-import { createContext, useContext, useRef } from "react"
+import { Children, createContext, isValidElement, lazy, Suspense, useContext, useRef } from "react"
+import { deflate, inflate, type SerializedElement } from "./rpc-components"
+import React from "react"
 
 export type RetrySettings = boolean | number
 export type RpcOptions<T extends RpcTarget> = {
@@ -89,6 +91,7 @@ function useRpc<T extends RpcTarget>(url: string, initOptions?: Partial<RpcOptio
     return stubRef.current
 }
 
+// @ts-ignore
 const RpcContext: React.Context<RpcStub<any>> = createContext<RpcStub<any>>(null)
 
 /**
