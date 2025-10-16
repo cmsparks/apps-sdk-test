@@ -7,7 +7,8 @@
     "dev:wrangler": "wrangler dev",
     "dev": "vite dev",
     "build": "vite build",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "test": "vitest"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.13.11",
@@ -15,13 +16,16 @@
     "@vitejs/plugin-react": "^5.0.4",
     "agents": "^0.2.9",
     "capnweb": "^0.1.0",
-    "react": "^19.3.0-canary-d7215b49-20251013",
-    "react-dom": "^19.3.0-canary-d7215b49-20251013",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "vite": "^7.1.9",
-    "vite-plugin-singlefile": "^2.3.0"
+    "vite-plugin-singlefile": "^2.3.0",
+    "vitest": "^3.2.4",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2"
+    "@types/react-dom": "^19.2.2",
+    "@types/ws": "^8.18.1"
   }
 }

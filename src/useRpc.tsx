@@ -1,6 +1,5 @@
 import { newWebSocketRpcSession, RpcStub, type RpcTarget } from "capnweb"
 import { Children, createContext, isValidElement, lazy, Suspense, useContext, useRef } from "react"
-import { deflate, inflate, type SerializedElement } from "./rpc-components"
 import React from "react"
 
 export type RetrySettings = boolean | number
