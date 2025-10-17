@@ -152,3 +152,11 @@ function resolveRpcComponent(
 
 1. `makeSerializable(...)`: Capnweb handles serialization, but it can't serialize *everything*. We need to strip out unserializable properties (primarily `$$typeof`: Symbol('react....') attribute).
 2. `unmakeSerializable(...)`: After Capnweb deserializes the component, we need to restore the items to their proper types. This primarily involves
+
+
+#### TODOs
+ * Fragments are broken :sad: 
+ * Client side updates (primarily loading states, so we're not waiting for a rerender)
+ * reimplement deferFallback in RpcSuspense, but make it good
+ * Implement as many hooks as possible and make sure they're the exact same functionality/type signatures as the client side hooks
+ * Callbacks are definitely leaky memory wise. We don't adequately clean up callbacks.

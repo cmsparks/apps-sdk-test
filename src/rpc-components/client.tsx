@@ -1,6 +1,5 @@
-import { Children, isValidElement, lazy, Suspense, useId, useReducer, useRef } from "react";
+import { Children, isValidElement, lazy, Suspense, useId, useReducer, useRef, useState } from "react";
 import { makeSerializable, unmakeSerializable } from "./serialize";
-import { deserializeComponent } from "../serialize-react";
 
 /**
  * Resolve an RPC component via React.lazy() so it works with Suspense.
@@ -23,19 +22,36 @@ function resolveRpcComponent(
 ): React.FC {
     const id = useId()
     const componentRef = useRef<React.FC | null>(null)
-    const [, triggerResolve] = useReducer(x => x + 1, 0)
+    const [resolveMode, triggerResolve] = useReducer<{ mode: "refetch" | "ref", count: number }>((state, action) => {
+        if (action === "ref") {
+            return {
+                mode: "ref",
+                count: state.count + 1
+            }
+        } else {
+            return {
+                mode: "refetch",
+                count: state.count
+            }
+        }
+    }, { mode: "refetch", count: 0 })
 
     return lazy(async () => {
         // reresolve is a hook passed to the entrypointFn. 
         // It lets our RPC component trigger state updates for ANY COMPONENT IN OUR RPC COMPONENT TREE!
         const reresolve = (serializedComponent: any) => {
+            console.log("reresolving", serializedComponent)
             const tree = unmakeSerializable(serializedComponent);
             const Component: React.FC = () => <>{tree}</>;
-            componentRef.current = Component
-            triggerResolve()
+            componentRef.current = <Component />
+            triggerResolve("ref")
         }
 
-        const desc = await entrypointFn(id, reresolve, boundProps ?? {})
+        console.log("reresolving lazy:", resolveMode)
+        const desc = resolveMode.mode === "refetch" ? 
+            await entrypointFn(id, reresolve, boundProps ?? {}) : 
+            componentRef.current
+
         const tree = unmakeSerializable(desc);
         const Component: React.FC = () => <>{tree}</>;
         componentRef.current = Component

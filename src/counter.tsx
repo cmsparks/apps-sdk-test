@@ -1,11 +1,11 @@
 import { RpcStub, RpcTarget } from "capnweb";
-import { RpcComponent } from "./rpc-components";
+import { RpcComponent, RpcComponentServer } from "./rpc-components/server";
+import { useReducer, useState } from "./rpc-components/hooks";
 
 /**
  * Server side code for the counter
  */
-export class UIEntrypoint extends RpcTarget {
-    private onUISessionChange: () => Promise<void> = async () => { }
+export class UIEntrypoint extends RpcComponentServer {
     private sessionItems: Array<{ favorited: boolean; title: string; description: string }> = [
         { favorited: false, title: "Alpha", description: "First card in the list." },
         { favorited: false, title: "Bravo", description: "Second card with additional details." },
@@ -33,12 +33,17 @@ export class UIEntrypoint extends RpcTarget {
         super()
     }
 
-    registerOnUIChange(cb: RpcStub<() => void>) {
-        this.onUISessionChange = cb.dup()
+    @RpcComponent()
+    async SimpleDiv() {
+        return <div>Simple div</div>
     }
 
     @RpcComponent()
     async CardList() {
+        const [count, reducerRerender] = useReducer(x => x + 1, 0)
+
+        console.log("render: ", count)
+
         const items = await this.getStubbedItems()
         return <div className="card-list" role="list">
             {await Promise.all(items.map(async (item, id) => {
@@ -51,14 +56,15 @@ export class UIEntrypoint extends RpcTarget {
                         <button onClick={(e) => {
                             console.log(`Clicked favorite on the server (${e.clientX}, ${e.clientY})`)
                             this.sessionItems[id].favorited = !this.sessionItems[id].favorited
-                            this.onUISessionChange()
+                            console.log("pushing rerender")
+                            reducerRerender()
                         }}>
                             {favorited ? "Unfavorite" : "Favorite"}
                         </button>
                         <button onClick={(e) => {
                             console.log(`Clicked remove on the server (${e.clientX}, ${e.clientY})`)
                             this.sessionItems.splice(id, 1)
-                            this.onUISessionChange()
+                            reducerRerender()
                         }}>
                             Remove
                         </button>
@@ -74,5 +80,15 @@ export class UIEntrypoint extends RpcTarget {
         const items = this.sessionItems.map((item, id) => ({ ...item, imageUrl: `https://picsum.photos/seed/${encodeURIComponent(id)}/300` }))
         // simulate per-item latency for variety
         return items.map((item) => new Promise((r) => setTimeout(() => r(item), 50 + Math.random() * 100)))
+    }
+
+    @RpcComponent()
+    async Counter() {
+        const [count, setCount] = useState(0)
+
+        return <div>
+            <div>Count: {count}</div>
+            <button onClick={() => setCount(count + 1)}>Increment</button>
+        </div>
     }
 }

@@ -140,8 +140,8 @@ export function makeSerializable(element: any, onRpcCallback?: () => void): any 
         // Primitives / functions
         return value
     }
-
-    return clean(element, true)
+    const cleaned = clean(element, true)
+    return cleaned
 }
 
 /**
@@ -186,6 +186,15 @@ export function unmakeSerializable(input: any): React.ReactNode {
             }
             return out
         }
+
+        // make sure we .dup() capnweb stubs
+        // TODO: should clean this up
+        if (typeof value === 'function') {
+            if ("dup" in value) {
+                return value.dup()
+            }
+        }
+
         // primitives
         return value
     }
