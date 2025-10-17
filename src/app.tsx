@@ -30,6 +30,7 @@ function App() {
                         <p className="counter-value" aria-live="polite">???</p>
                     }
                 >
+                    {/* @ts-ignore our RPC component */}
                     <rpc.CardList />
                 </RpcSuspense>
             </div>

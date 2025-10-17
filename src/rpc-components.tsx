@@ -18,7 +18,7 @@ import { deserializeComponent, makeSerializable } from "./serialize-react";
  *   properties.
  * 
  * If we had custom serializers in capnweb, we could avoid the need for RpcComponent (and some parts of RpcSuspense).
- * But we'd probably still need the custom suspense boundary 
+ * But we'd probably still need the custom suspense boundary.
  */
 
 // Simple string hash (FNV-1a 32-bit), returns base36 string for compactness
