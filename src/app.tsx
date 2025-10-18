@@ -16,6 +16,14 @@ function App() {
                 
                 {/* suspense boundary for our RPC components */}
                 <RpcSuspense deferFallback fallback={<p>Loading counter...</p>}>
+                    <h1>Counter (defer fallback)</h1>
+                    {/* @ts-ignore I have no idea why only the first rpc call shows a type error? */}
+                    <rpc.Counter />
+                </RpcSuspense>
+
+                {/* suspense boundary for our RPC components */}
+                <RpcSuspense fallback={<p>Loading counter...</p>}>
+                    <h1>Counter (no defer fallback)</h1>
                     <rpc.Counter />
                 </RpcSuspense>
 
@@ -34,7 +42,7 @@ function App() {
 }
 const root = createRoot(document.getElementById("root")!);
 root.render(
-    <RpcProvider url={window.location.href.includes("localhost") ? `http://${window.location.host}/rpc` : "https://counter-mcp.cmsparks.workers.dev/rpc"}>
+    <RpcProvider url={window.location.href.includes("localhost") ? `http://${window.location.host}/rpc` : `https://${window.location.host}/rpc`}>
         <App />
     </RpcProvider>
 );

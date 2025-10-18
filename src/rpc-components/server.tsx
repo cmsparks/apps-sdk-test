@@ -4,15 +4,16 @@ import { makeSerializable, unmakeSerializable } from "./serialize"
 import type { Hook } from "./hooks"
 
 export const asl = new AsyncLocalStorage<{ this: RpcComponentServer, id: string }>()
+type ComponentData = {
+    component: string | symbol,
+    args: any[],
+    reresolve: RpcStub<(serializableComponent: any) => void>,
+    currentHookIndex: number,
+    hooks: Array<Hook<any, any>>
+}
 
 export class RpcComponentServer extends RpcTarget {
-    components: Record<string, {
-        component: string | symbol,
-        args: any[],
-        reresolve: RpcStub<(serializableComponent: any) => void>,
-        currentHookIndex: number,
-        hooks: Array<Hook<any, any>>
-    }> = {}
+    components: Record<string, ComponentData> = {}
 
     constructor() {
         super()
@@ -36,21 +37,15 @@ export class RpcComponentServer extends RpcTarget {
     // Imperatively push a rerender for a component
     // You shouldn't use this. Instead use the included useState hook
     private async pushRerender(id: string) {
-        console.log("pushing rerender for component", id)
         const component = this.components[id]
-        console.log("pushing rerender for component", component)
-        console.log(this.components)
-        console.log(this)
         if (!component) throw new Error("Tried to rerender component that doesn't exist")
         
         // Reset hook index before re-rendering so hooks are read from the start
         component.currentHookIndex = 0
         
         const componentFunction = this[component.component as keyof this] as Function
-        console.log("component function", componentFunction)
         try {
             const componentRes = await componentFunction.call(this, id, component.reresolve, ...component.args)
-            console.log("component", componentRes)
             await component.reresolve(componentRes)
         } catch (e) {
             console.error("Failed to rerender component", id, e)
@@ -74,13 +69,13 @@ export function RpcComponent(): MethodDecorator {
             reresolve: RpcStub<(serializableComponent: any) => void>,
             ...args: any[]
         ) {
-            console.log({id, reresolve, args})
             // revive any serialized React props before calling the original method
             let revivedArgs = args.map((a) => unmakeSerializable(a))
             // @ts-ignore
             // Preserve existing hooks and state when updating component
-            const existingComponent = this.components[id]
-            this.components[id] = {
+            const existingComponent = this.components[id] as ComponentData
+
+            (this as RpcComponentServer).components[id] = {
                 component: propertyKey,
                 args,
                 reresolve: reresolve.dup(),

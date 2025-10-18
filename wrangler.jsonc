@@ -1,32 +1,13 @@
 {
-  "name": "counter-mcp",
+  "name": "rpc-components",
   "main": "src/index.ts",
-  "compatibility_date": "2025-08-26",
+  "compatibility_date": "2025-10-17",
   "compatibility_flags": ["nodejs_compat"],
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "MCP_OBJECT",
-        "class_name": "McpWidgetAgent"
-      },
-      {
-        "name": "COUNTER",
-        "class_name": "Counter"
-      }
-    ]
-  },
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["McpWidgetAgent"]
-    },
-    {
-      "tag": "v2",
-      "new_sqlite_classes": ["Counter"]
-    }
-  ],
   "assets": {
     "directory": "dist",
     "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
   }
 }

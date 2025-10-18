@@ -1,4 +1,4 @@
-import type { AnyActionArg, useReducer as reactUseReducer } from "react"
+import type { ActionDispatch, AnyActionArg, useReducer as reactUseReducer } from "react"
 import { asl } from "./server"
 
 export interface Hook<S, A> {
@@ -54,6 +54,7 @@ export const useReducer = <S, A extends AnyActionArg>(
             // Process all queued actions through the reducer
             let newState = hook.memoizedState
             for (const action of hook.queue) {
+                // @ts-ignore TODO fix types with hooks
                 newState = reducer(newState, action)
             }
             hook.memoizedState = newState
@@ -87,7 +88,7 @@ function reducer<T>(state: T, action: T | ((state: T) => T)) {
     return action;
 }
 
-export function useState<T>(initialState: T) {
+export function useState<T>(initialState: T): [T, ActionDispatch<[action: T | ((state: T) => T)]>] {
     const [state, dispatch] = useReducer(reducer<T>, initialState);
     return [state, dispatch];
 }

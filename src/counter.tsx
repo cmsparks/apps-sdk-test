@@ -1,4 +1,3 @@
-import { RpcStub, RpcTarget } from "capnweb";
 import { RpcComponent, RpcComponentServer } from "./rpc-components/server";
 import { useReducer, useState } from "./rpc-components/hooks";
 
@@ -46,8 +45,8 @@ export class UIEntrypoint extends RpcComponentServer {
 
         const items = await this.getStubbedItems()
         return <div className="card-list" role="list">
-            {await Promise.all(items.map(async (item, id) => {
-                const { favorited, title, description, imageUrl } = await item
+            {items.map((item, id) => {
+                const { favorited, title, description, imageUrl } = item
                 return (
                     <div key={id} className="card" role="listitem">
                         <img className="card-img" src={imageUrl} alt={title} loading="lazy" />
@@ -70,16 +69,15 @@ export class UIEntrypoint extends RpcComponentServer {
                         </button>
                     </div>
                 )
-            }))}
+            })}
         </div>
     }
 
-    private async getStubbedItems(): Promise<Array<Promise<{ favorited: boolean; title: string; description: string; imageUrl: string }>>> {
+    private async getStubbedItems(): Promise<Array<{ favorited: boolean; title: string; description: string; imageUrl: string }>> {
         // Simulate latency of initial fetch
-        await new Promise((r) => setTimeout(r, 50))
         const items = this.sessionItems.map((item, id) => ({ ...item, imageUrl: `https://picsum.photos/seed/${encodeURIComponent(id)}/300` }))
         // simulate per-item latency for variety
-        return items.map((item) => new Promise((r) => setTimeout(() => r(item), 50 + Math.random() * 100)))
+        return items
     }
 
     @RpcComponent()

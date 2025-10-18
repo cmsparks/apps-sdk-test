@@ -1,9 +1,4 @@
-import { McpAgent } from "agents/mcp";
-import { Agent, callable, routeAgentRequest, type AgentContext } from "agents";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import { newWorkersRpcResponse, RpcStub, RpcTarget } from "capnweb";
-import { DurableObject } from "cloudflare:workers";
+import { newWorkersRpcResponse } from "capnweb";
 import { UIEntrypoint } from "./counter";
 
 export default {
@@ -19,7 +14,9 @@ export default {
       if (req.method === "OPTIONS") {
         return new Response("OK", { headers: corsHeaders })
       }
-      return newWorkersRpcResponse(req, new UIEntrypoint(env));
+      const entrypoint = new UIEntrypoint(env)
+      console.log(entrypoint)
+      return newWorkersRpcResponse(req, entrypoint);
     }
 
     return new Response("Not found", { status: 404 })
